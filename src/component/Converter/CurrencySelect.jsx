@@ -16,7 +16,7 @@ export default function CurrencySelect({
         <select
             value={value}
             onChange={onChange}
-            className="bg-neutral-700 text-white px-4 py-3 rounded-lg"
+            className="bg-neutral-700 flex-1 text-white px-4 py-3 rounded-lg"
         >
             {currencies.map((currency) => (
                 <option key={currency}>

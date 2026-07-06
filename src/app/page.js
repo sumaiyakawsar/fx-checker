@@ -1,7 +1,7 @@
-import Header from "@/components/Header/Header";
-import LiveTicker from "@/components/LiveTicker/LiveTicker";
-import Converter from "@/components/Converter/Converter";
-import Button from "@/components/UI/Button/Button";
+import Header from "@/component/Header/Header";
+import LiveTicker from "@/component/LiveTicker/LiveTicker";
+import Converter from "@/component/Converter/Converter";
+import Button from "@/component/UI/Button/Button";
 
 export default function Home() {
   return (

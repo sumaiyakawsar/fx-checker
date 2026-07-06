@@ -42,7 +42,7 @@ export default function Converter() {
 
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
 
-                    <div className="bg-[#242424] rounded-2xl p-6 w-full min-w-0">
+                    <div className="bg-[#242424] rounded-2xl p-6 flex flex-row">
 
 
                         <AmountInput
@@ -51,21 +51,18 @@ export default function Converter() {
                             onChange={(e) => setAmount(e.target.value)}
                             textColor="text-white"
                         />
-
-                        <div className="mt-6">
-                            <CurrencySelect
-                                value={conversion.from}
-                                onChange={(e) =>
-                                    setFrom(e.target.value)
-                                }
-                            />
-                        </div>
+                        <CurrencySelect
+                            value={conversion.from}
+                            onChange={(e) =>
+                                setFrom(e.target.value)
+                            }
+                        />
 
                     </div>
 
                     <SwapButton />
 
-                    <div className="bg-[#242424] rounded-2xl p-6 w-full min-w-0">
+                    <div className="bg-[#242424] flex flex-row rounded-2xl p-6">
 
                         <AmountInput
                             label="Receive"
@@ -74,14 +71,14 @@ export default function Converter() {
                             readOnly
                             textColor="text-lime-400"
                         />
-                        <div className="mt-6">
-                            <CurrencySelect
-                                value={conversion.to}
-                                onChange={(e) =>
-                                    setTo(e.target.value)
-                                }
-                            />
-                        </div>
+
+                        <CurrencySelect
+                            value={conversion.to}
+                            onChange={(e) =>
+                                setTo(e.target.value)
+                            }
+                        />
+
 
                     </div>
 
