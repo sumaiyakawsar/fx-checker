@@ -1,37 +1,42 @@
-import { ACTIONS } from "@/constants/actions";
+"use client";
+
+import { useCurrency } from "@/context/CurrencyContext";
 import Button from "../UI/Button/Button";
-import { FaStar } from "react-icons/fa";
-
-
+import { FaStar, FaRegStar } from "react-icons/fa";
+import { ACTIONS } from "@/constants/actions";
 
 export default function RateInfo({
-    rate = "1 USD = 0.8530 EUR",
     onFavorite,
     onLog,
+    isFavorited,
 }) {
-    return (
-        <div className="flex justify-between items-center mt-6 border-t border-neutral-800 pt-4">
+    const {
+        exchangeRate,
+        fromCurrency,
+        toCurrency,
+    } = useCurrency();
 
+    if (!exchangeRate) return null;
+
+    return (
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <p className="text-sm text-neutral-400">
-                {rate}
+                1 {fromCurrency} = {exchangeRate.toFixed(4)} {toCurrency}
             </p>
 
-            <div className="flex gap-3">
-
-                
+            <div className="flex items-center gap-3">
                 <Button
-                    variant="primary"
-                    icon={<FaStar />} 
+                    variant={isFavorited ? "primary" : "outline"}
+                    icon={isFavorited ? <FaStar /> : <FaRegStar />}
                     onClick={onFavorite}
                 >
-                    {ACTIONS.favorite}
+                    {isFavorited ? "Favorited" : ACTIONS.favorite}
                 </Button>
-                
+
                 <Button variant="outline" onClick={onLog}>
                     Log Conversion
                 </Button>
             </div>
-
         </div>
     );
 }

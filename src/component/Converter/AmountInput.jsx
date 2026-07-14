@@ -6,18 +6,20 @@ export default function AmountInput({
     textColor = "text-white",
 }) {
     return (
-        <div className="flex flex-col gap-2 flex-1">
-            <label className="text-xs uppercase tracking-widest text-neutral-500">
+        <div className="flex flex-1 min-w-0 flex-col gap-2">
+
+            <label className="text-[11px] uppercase tracking-[0.25em] text-neutral-500">
                 {label}
             </label>
 
             <input
                 type="number"
-                value={value}
+                value={value ?? ""}
                 readOnly={readOnly}
                 onChange={onChange}
-                className={`bg-transparent text-5xl font-bold outline-none ${textColor}`}
+                className={`w-full bg-transparent text-5xl font-bold outline-none ${textColor}`}
             />
+
         </div>
     );
 }

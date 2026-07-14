@@ -1,8 +1,19 @@
+"use client";
+import { useState, useEffect } from "react";
+
+import { getCurrencies } from "@/services/frankfurter";
 import { HiArrowTrendingUp } from "react-icons/hi2";
 
 export default function Header() {
-    const HEADER_INFO = {
-        currencyCount: 55,
+    const [currencyCount, setCurrencyCount] = useState(null);
+
+    useEffect(() => {
+        getCurrencies()
+            .then((data) => setCurrencyCount(data.length))
+            .catch((err) => console.error("Failed to load currencies:", err));
+    }, []);
+
+    const HEADER_INFO = { 
         provider: "ECB Data",
         updateType: "EOD",
     };
@@ -28,7 +39,7 @@ export default function Header() {
 
                 {/* Right Side */}
                 <div className="hidden md:flex items-center gap-4 text-xs uppercase tracking-widest text-gray-400">
-                    <span>{HEADER_INFO.currencyCount} Currencies</span>
+                    <span>{currencyCount ?? "—"} Currencies</span>
                     <span>•</span>
                     <span>{HEADER_INFO.updateType}</span>
                     <span>•</span>

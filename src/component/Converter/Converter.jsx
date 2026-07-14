@@ -1,97 +1,143 @@
 "use client";
 
-import { useState } from "react";
+import { useCurrency } from "@/context/CurrencyContext";
+import useLocalStorage from "@/lib/useLocalStorage";
 
 import AmountInput from "./AmountInput";
 import CurrencySelect from "./CurrencySelect";
-import SwapButton from "./SwapButton";
 import RateInfo from "./RateInfo";
 
+import useExchangeRates from "@/hooks/useExchangeRates";
+import useCurrencies from "@/hooks/useCurrencies";
+import { HiArrowsRightLeft } from "react-icons/hi2";
+
 export default function Converter() {
-    const [amount, setAmount] = useState(1000);
+    useCurrencies();
+    useExchangeRates();
 
-    const [from, setFrom] = useState("USD");
+    const {
+        amount,
+        setAmount,
 
-    const [to, setTo] = useState("EUR");
+        fromCurrency,
+        setFromCurrency,
 
+        toCurrency,
+        setToCurrency,
+
+        convertedAmount,
+        exchangeRate,
+
+        swapCurrencies
+    } = useCurrency();
+
+    const [favorites, setFavorites] = useLocalStorage("fxchecker_favorites", []);
+    const [, setLog] = useLocalStorage("fxchecker_log", []);
+
+    const isFavorited = favorites.some(
+        (f) => f.fromCurrency === fromCurrency && f.toCurrency === toCurrency
+    );
 
     const handleFavorite = () => {
-        console.log("Favorite clicked");
+        setFavorites((prev) => {
+            const exists = prev.some(
+                (f) => f.fromCurrency === fromCurrency && f.toCurrency === toCurrency
+            );
+
+            if (exists) {
+                return prev.filter(
+                    (f) => !(f.fromCurrency === fromCurrency && f.toCurrency === toCurrency)
+                );
+            }
+
+            return [...prev, { fromCurrency, toCurrency }];
+        });
     };
 
     const handleLog = () => {
-        console.log("Log clicked");
+        if (!exchangeRate) return;
+
+        setLog((prev) => [
+            ...prev,
+            {
+                id: crypto.randomUUID(),
+                fromCurrency,
+                toCurrency,
+                amount,
+                convertedAmount,
+                exchangeRate,
+                timestamp: Date.now(),
+            },
+        ]);
     };
 
-    const [conversion, setConversion] = useState({
-        amount: 1000,
-        from: "USD",
-        to: "EUR",
-        rate: 0.8530,
-        result: 853.02,
-    });
+
 
     return (
-        <section className="container mx-auto mt-14 px-6">
-
-            <h2 className="text-3xl font-bold text-white mb-8 uppercase tracking-widest">
+        <section className="w-full">
+            <h2 className="mb-8 text-3xl font-bold uppercase tracking-[0.25em] text-white">
                 Check The Rate
             </h2>
 
-            <div className="w-full bg-[#1b1b1b] rounded-3xl p-8 shadow-xl">
+            <div className="divide-y-3 divide-zinc-800 divide-dashed rounded-3xl bg-[#1b1b1b]  shadow-2xl">
 
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
+                {/* Converter */}
+                <div className="flex flex-col items-center gap-5 md:flex-row p-6 md:p-8">
 
-                    <div className="bg-[#242424] rounded-2xl p-6 flex flex-row">
-
+                    {/* SEND */}
+                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-[#252525] p-4 min-w-0">
 
                         <AmountInput
                             label="Send"
-                            value={conversion.amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            value={amount}
+                            onChange={(e) => setAmount(Number(e.target.value))}
                             textColor="text-white"
                         />
-                        <CurrencySelect
-                            value={conversion.from}
-                            onChange={(e) =>
-                                setFrom(e.target.value)
-                            }
-                        />
 
+                        <CurrencySelect
+                            value={fromCurrency}
+                            onChange={(e) => setFromCurrency(e.target.value)}
+                        />
                     </div>
 
-                    <SwapButton />
+                    {/* SWAP */}
+                    <button
+                        className="p-3 cursor-pointer rounded-xl bg-[#3a3a3a] hover:bg-[#4a4a4a] flex items-center justify-center transition
+                "
+                        onClick={swapCurrencies}
+                    >
+                        <HiArrowsRightLeft
+                            className="text-white text-2xl"
+                        />
+                    </button >
 
-                    <div className="bg-[#242424] flex flex-row rounded-2xl p-6">
+                    {/* RECEIVE */}
+                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-[#252525] p-4 min-w-0">
 
                         <AmountInput
                             label="Receive"
-                            value={conversion.result}
-                            onChange={(e) => setAmount(e.target.value)}
+                            value={convertedAmount ?? ""}
                             readOnly
                             textColor="text-lime-400"
                         />
 
                         <CurrencySelect
-                            value={conversion.to}
-                            onChange={(e) =>
-                                setTo(e.target.value)
-                            }
+                            value={toCurrency}
+                            onChange={(e) => setToCurrency(e.target.value)}
                         />
 
-
                     </div>
-
                 </div>
 
-
-                <RateInfo
-                    rate={`1 ${conversion.from} = ${conversion.rate} ${conversion.to}`}
-                    onFavorite={handleFavorite}
-                    onLog={handleLog}
-                />
+                {/* Rate + Buttons */}
+                <div className="px-8 py-6">
+                    <RateInfo
+                        onFavorite={handleFavorite}
+                        onLog={handleLog}
+                        isFavorited={isFavorited}
+                    />
+                </div>
             </div>
-
         </section>
     );
 }
