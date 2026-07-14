@@ -117,3 +117,56 @@ export async function getTickerRates(pairs) {
         return { pair, rate, change };
     });
 }
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Get Historical Rates (for History tab chart)
+|--------------------------------------------------------------------------
+*/
+function getDateRangeForPeriod(range) {
+    const today = new Date();
+    const to = today.toISOString().split("T")[0];
+    const from = new Date(today);
+
+    switch (range) {
+        case "1D":
+            from.setDate(from.getDate() - 5); // buffer for weekends/holidays (EOD data only)
+            break;
+        case "1W":
+            from.setDate(from.getDate() - 7);
+            break;
+        case "1M":
+            from.setMonth(from.getMonth() - 1);
+            break;
+        case "3M":
+            from.setMonth(from.getMonth() - 3);
+            break;
+        case "1Y":
+            from.setFullYear(from.getFullYear() - 1);
+            break;
+        case "5Y":
+            from.setFullYear(from.getFullYear() - 5);
+            break;
+        default:
+            from.setMonth(from.getMonth() - 1);
+    }
+
+    return { from: from.toISOString().split("T")[0], to };
+}
+
+
+export async function getHistoricalRates(base, quote, range) {
+    const { from, to } = getDateRangeForPeriod(range);
+    const params = new URLSearchParams({ base, quotes: quote, from, to });
+
+    const data = await fetchAPI(`${BASE_URL}/rates?${params.toString()}`);
+
+    return data
+        .map((row) => ({ date: row.date, rate: row.rate }))
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+
+ 
