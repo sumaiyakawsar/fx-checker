@@ -42,6 +42,7 @@ export default function CurrencySelect({
     className = "w-28",
     placeholder = "Select currency",
     openUpward = false,
+    excludeCodes = [],
 }) {
     const { currencies } = useCurrency();
 
@@ -54,15 +55,29 @@ export default function CurrencySelect({
 
     const hasValue = Boolean(value);
 
-    const filtered = currencies.filter((currency) => {
-        const q = query.trim().toLowerCase();
-        if (!q) return true;
+    // const filtered = currencies.filter((currency) => {
+    //     const q = query.trim().toLowerCase();
+    //     if (!q) return true;
 
-        return (
-            currency.code.toLowerCase().includes(q) ||
-            currency.name?.toLowerCase().includes(q)
-        );
-    });
+    //     return (
+    //         currency.code.toLowerCase().includes(q) ||
+    //         currency.name?.toLowerCase().includes(q)
+    //     );
+    // });
+
+
+
+    const filtered = currencies
+        .filter((currency) => !excludeCodes.includes(currency.code))  // <-- add this
+        .filter((currency) => {
+            const q = query.trim().toLowerCase();
+            if (!q) return true;
+
+            return (
+                currency.code.toLowerCase().includes(q) ||
+                currency.name?.toLowerCase().includes(q)
+            );
+        });
 
     // Close on outside click
     useEffect(() => {

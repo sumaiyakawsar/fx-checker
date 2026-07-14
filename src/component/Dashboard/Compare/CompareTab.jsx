@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getRates } from "@/services/frankfurter";
 import CurrencySelect from "@/component/Converter/CurrencySelect";
+import { IoCloseOutline } from "react-icons/io5";
 
 const DEFAULT_TARGETS = ["EUR", "GBP", "JPY", "AUD"];
 
@@ -63,8 +64,9 @@ export default function CompareTab() {
         setTargets((prev) => prev.filter((c) => c !== code));
     }
 
+   
     function addTarget(code) {
-        setTargets((prev) => [...prev, code]);
+        setTargets((prev) => (prev.includes(code) ? prev : [...prev, code]));
         setAdding(false);
     }
 
@@ -82,7 +84,8 @@ export default function CompareTab() {
                             className="absolute right-3 top-3 text-zinc-600 opacity-0 transition-opacity hover:text-zinc-300 group-hover:opacity-100"
                             aria-label={`Remove ${code}`}
                         >
-                            ✕
+                            <IoCloseOutline />
+
                         </button>
                         <p className="text-xs uppercase tracking-widest text-zinc-500">{code}</p>
                         <p className="mt-2 font-mono text-2xl text-lime-400">
@@ -116,6 +119,7 @@ export default function CompareTab() {
                                 onChange={(e) => addTarget(e.target.value)}
                                 className="w-full"
                                     openUpward
+                                    excludeCodes={[fromCurrency, ...targets]}
                             />
 
                             <button
@@ -127,6 +131,9 @@ export default function CompareTab() {
                         </div>
                     )}
                 </div>
+
+               
+                
             </div>
         </div>
     );
