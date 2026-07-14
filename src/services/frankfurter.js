@@ -119,6 +119,33 @@ export async function getTickerRates(pairs) {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| Get Rates (base -> multiple quotes, for Compare tab)
+|--------------------------------------------------------------------------
+*/
+export async function getRates(base, quotes) {
+    if (!quotes.length) return {};
+
+    const symbols = quotes.join(",");
+    const data = await fetchAPI(`${BASE_URL}/rates?base=${base}&quotes=${symbols}`);
+
+    const map = {};
+    if (Array.isArray(data)) {
+        data.forEach((entry) => {
+            if (quotes.includes(entry.quote)) map[entry.quote] = entry.rate;
+        });
+    } else if (data?.rates) {
+        Object.assign(map, data.rates);
+    } else if (data && typeof data === "object") {
+        quotes.forEach((q) => {
+            if (data[q] !== undefined) map[q] = data[q];
+        });
+    }
+
+    return map;
+}
+
 
 /*
 |--------------------------------------------------------------------------
