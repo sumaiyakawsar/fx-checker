@@ -10,7 +10,7 @@ export default function HistoryStats({ open, last, change, changePercent, loadin
         {
             label: "CHANGE",
             value: loading || change == null ? "—" : `${isUp ? "+" : ""}${change.toFixed(4)}`,
-            color: isUp ? "text-lime-400" : "text-red-400",
+            color: isUp ? "text-accent" : "text-red-400",
         },
         {
             label: "% CHANGE",
@@ -24,7 +24,7 @@ export default function HistoryStats({ open, last, change, changePercent, loadin
                             {changePercent.toFixed(2)}%
                         </span>
                     ),
-            color: isUp ? "text-lime-400" : "text-red-400",
+            color: isUp ? "text-accent" : "text-red-400",
         },
     ];
 
@@ -34,7 +34,7 @@ export default function HistoryStats({ open, last, change, changePercent, loadin
                     <StatCard key={s.label} 
                         title={s.label}
                         value={s.value}
-                        valueColor={s.color || "text-white"}
+                        valueColor={s.color || "text-fg"}
                     />
             ))}
         </div>

@@ -1,16 +1,16 @@
 export const buttonVariants = {
     primary:
-        "bg-lime-400 text-black hover:bg-lime-200",
+        "bg-accent text-accent-fg hover:opacity-80",
 
     secondary:
-        "bg-lime-400 text-white hover:bg-neutral-700",
+        "bg-bg-elevated text-fg border border-border hover:bg-border",
 
     outline:
-        "border border-lime-400 text-white hover:bg-lime-400 hover:text-black",
+        "border border-accent text-fg hover:bg-accent hover:text-accent-fg",
 
     danger:
         "bg-red-500 text-white hover:bg-red-400",
 
     ghost:
-        "hover:bg-neutral-800 text-white",
+        "hover:bg-bg-elevated text-fg",
 };

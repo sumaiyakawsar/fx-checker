@@ -75,23 +75,23 @@ export default function Converter() {
 
     return (
         <section className="w-full">
-            <h2 className="mb-8 text-3xl font-bold uppercase tracking-[0.25em] text-white">
+            <h2 className="mb-8 text-3xl font-bold uppercase tracking-[0.25em] text-fg">
                 Check The Rate
             </h2>
 
-            <div className="divide-y-3 divide-zinc-800 divide-dashed rounded-3xl bg-[#1b1b1b]  shadow-2xl">
+            <div className="divide-y-3 divide-border divide-dashed rounded-3xl bg-bg-elevated shadow-2xl">
 
                 {/* Converter */}
                 <div className="flex flex-col items-center gap-5 md:flex-row p-6 md:p-8">
 
                     {/* SEND */}
-                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-[#252525] p-4 min-w-0">
+                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-bg p-4 min-w-0">
 
                         <AmountInput
                             label="Send"
                             value={amount}
                             onChange={(e) => setAmount(Number(e.target.value))}
-                            textColor="text-white"
+                            textColor="text-fg"
                         />
 
                         <CurrencySelect
@@ -102,23 +102,22 @@ export default function Converter() {
 
                     {/* SWAP */}
                     <button
-                        className="p-3 cursor-pointer rounded-xl bg-[#3a3a3a] hover:bg-[#4a4a4a] flex items-center justify-center transition
-                "
+                        className="p-3 cursor-pointer rounded-xl bg-border hover:bg-fg-muted/40 flex items-center justify-center transition"
                         onClick={swapCurrencies}
                     >
                         <HiArrowsRightLeft
-                            className="text-white text-2xl"
+                            className="text-fg text-2xl"
                         />
                     </button >
 
                     {/* RECEIVE */}
-                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-[#252525] p-4 min-w-0">
+                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-bg p-4 min-w-0">
 
                         <AmountInput
                             label="Receive"
                             value={convertedAmount ?? ""}
                             readOnly
-                            textColor="text-lime-400"
+                            textColor="text-accent"
                         />
 
                         <CurrencySelect

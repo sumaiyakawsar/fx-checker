@@ -1,18 +1,13 @@
-function formatRate(pair, rate) {
-    if (rate === null || rate === undefined) return "—";
-    // JPY-quoted pairs conventionally show 2 decimals, everything else 4
-    const decimals = pair.endsWith("/JPY") ? 2 : 4;
-    return rate.toFixed(decimals);
-}
+import { formatRate } from "@/utils/formatCurrency";
 
 export default function TickerItem({ pair, rate, change }) {
     const positive = change >= 0;
     return (
-        <div className="flex items-center gap-2 px-6 whitespace-nowrap border-r border-neutral-800">
-            <span className="text-neutral-400 font-semibold">{pair}</span>
-            <span className="text-white">{formatRate(pair, rate)}</span>
+        <div className="flex items-center gap-2 px-6 whitespace-nowrap border-r border-border">
+            <span className="text-fg-muted font-semibold">{pair}</span>
+            <span className="text-fg">{formatRate(pair, rate)}</span>
             <span
-                className={`font-semibold ${positive ? "text-lime-400" : "text-red-500"
+                className={`font-semibold ${positive ? "text-accent" : "text-red-500"
                     }`}
             >
                 {positive ? "▲" : "▼"} {positive ? "+" : ""}

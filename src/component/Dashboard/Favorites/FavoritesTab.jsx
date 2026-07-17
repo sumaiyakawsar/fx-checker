@@ -5,7 +5,7 @@ import useLocalStorage from "@/lib/useLocalStorage";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getRates } from "@/services/frankfurter";
 
-export default function FavoritesTab({ onLoadPair }) { 
+export default function FavoritesTab({ onLoadPair }) {
 
     const { rates, setRates, setFromCurrency, setToCurrency } = useCurrency();
 
@@ -41,7 +41,7 @@ export default function FavoritesTab({ onLoadPair }) {
                 }
             } catch (err) {
                 console.error("Failed to fetch favorite rates:", err);
-            } 
+            }
         }
 
         fetchAllRates();
@@ -52,7 +52,7 @@ export default function FavoritesTab({ onLoadPair }) {
         () =>
             favorites.map((f) => ({
                 ...f,
-                rate: rates?.[f.fromCurrency]?.[f.toCurrency] ?? null, 
+                rate: rates?.[f.fromCurrency]?.[f.toCurrency] ?? null,
             })),
         [favorites, rates]
     );
@@ -71,9 +71,9 @@ export default function FavoritesTab({ onLoadPair }) {
 
     if (favorites.length === 0) {
         return (
-            <div className="rounded-2xl bg-[#1b1b1b] p-10 text-center">
-                <p className="text-sm text-zinc-500">No pinned pairs yet.</p>
-                <p className="mt-2 text-xs text-zinc-600">
+            <div className="rounded-2xl bg-bg-elevated p-10 text-center">
+                <p className="text-sm text-fg-muted">No pinned pairs yet.</p>
+                <p className="mt-2 text-xs text-fg-muted/70">
                     Pin a pair from the Converter to see it here.
                 </p>
             </div>
@@ -83,35 +83,35 @@ export default function FavoritesTab({ onLoadPair }) {
     return (
         <section className="space-y-6">
 
-            <p className="text-xs uppercase tracking-widest text-zinc-500">
+            <p className="text-xs uppercase tracking-widest text-fg-muted">
                 Pinned pairs · {favorites.length}
             </p>
 
-            <div className="divide-y divide-zinc-800 rounded-2xl bg-[#1b1b1b]">
+            <div className="divide-y divide-border rounded-2xl bg-bg-elevated">
                 {withRates.map(({ fromCurrency, toCurrency, rate }) => (
                     <div
                         key={`${fromCurrency}${toCurrency}`}
                         className="flex items-center justify-between px-5 py-4"
                     >
                         <div>
-                            <p className="font-mono text-sm text-white">
+                            <p className="font-mono text-sm text-fg">
                                 {fromCurrency}/{toCurrency}
                             </p>
-                            <p className="mt-0.5 font-mono text-lg text-lime-400">
+                            <p className="mt-0.5 font-mono text-lg text-accent">
                                 {rate ? rate.toFixed(4) : "—"}
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => load(fromCurrency, toCurrency)}
-                                className="rounded-lg px-3 py-1.5 text-xs uppercase tracking-widest text-zinc-300 hover:text-lime-400"
+                                className="rounded-lg px-3 py-1.5 text-xs uppercase tracking-widest text-fg-muted hover:text-accent"
                             >
                                 Load
                             </button>
                             <button
                                 onClick={() => unpin(fromCurrency, toCurrency)}
                                 aria-label={`Unpin ${fromCurrency}/${toCurrency}`}
-                                className="text-lime-400 hover:text-zinc-500"
+                                className="text-accent hover:text-fg-muted"
                                 title="Unpin"
                             >
                                 ★
@@ -123,4 +123,3 @@ export default function FavoritesTab({ onLoadPair }) {
         </section>
     );
 }
-

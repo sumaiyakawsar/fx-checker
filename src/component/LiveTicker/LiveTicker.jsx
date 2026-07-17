@@ -39,10 +39,10 @@ export default function LiveTicker() {
     }, []);
 
     return (
-        <section className="w-full bg-[#1A1A1A] border-b border-neutral-800">
+        <section className="w-full bg-bg-elevated border-b border-border">
             <div className="flex overflow-hidden">
                 {/* Left Label */}
-                <div className="bg-lime-400 text-black p-2 flex items-center gap-2 font-bold uppercase tracking-wider shrink-0 z-10">
+                <div className="bg-accent text-accent-fg p-2 flex items-center gap-2 font-bold uppercase tracking-wider shrink-0 z-10">
                     <span>●</span>
                     <span>Live Markets</span>
                 </div>
@@ -50,7 +50,7 @@ export default function LiveTicker() {
                 {/* Marquee */}
                 <div className="relative flex flex-1 overflow-hidden">
                     {loading ? (
-                        <div className="flex items-center px-6 text-neutral-500 text-sm">
+                        <div className="flex items-center px-6 text-fg-muted text-sm">
                             Loading live rates...
                         </div>
                     ) : (

@@ -5,7 +5,7 @@ import Dashboard from "@/component/Dashboard/Dashboard";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0f0f0f]">
+    <main className="min-h-screen bg-bg">
       <Header />
       <LiveTicker />
       <div className="container  mx-auto mt-14 px-6 flex flex-col gap-10">

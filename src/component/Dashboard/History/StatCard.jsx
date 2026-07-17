@@ -1,16 +1,16 @@
-export default function StatCard({
+ export default function StatCard({
     title,
     value,
-    valueColor = "text-white",
+    valueColor = "text-fg",
 }) {
     return (
-        <div className="rounded-lg bg-[#1b1b1b] shadow-lg px-4 py-3">
+        <div className="rounded-lg bg-bg-elevated shadow-lg px-4 py-3">
 
-            <p className="uppercase text-[11px] tracking-wide text-white/40">
+            <p className="uppercase text-[11px] tracking-wide text-fg-muted">
                 {title}
             </p>
 
-            <h3 className={`mt-1 font-mono text-lg  ${valueColor || "text-white"}`}>
+            <h3 className={`mt-1 font-mono text-lg  ${valueColor || "text-fg"}`}>
                 {value}
             </h3>
         </div>
