@@ -1,21 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import useLocalStorage from "@/lib/useLocalStorage";
 import { formatTime } from "@/utils/formatDate";
+import { buildLogCsv, downloadCsv } from "@/lib/exportCSV";
+import { HiOutlineArrowDownTray } from "react-icons/hi2";
+
 
 export default function LogTab() {
     const [log, setLog] = useLocalStorage("fxchecker_log", []);
     const [confirmClear, setConfirmClear] = useState(false);
 
-    function deleteEntry(id) {
-        setLog((prev) => prev.filter((entry) => entry.id !== id));
-    }
+    // Computed once per log change, reused for both the visible list and the CSV export —
+    // avoids sorting the same array twice on every render.
+    const sortedLog = useMemo(
+        () => [...log].sort((a, b) => b.timestamp - a.timestamp),
+        [log]
+    );
 
-    function clearAll() {
+    const deleteEntry = useCallback(
+        (id) => {
+            setLog((prev) => prev.filter((entry) => entry.id !== id));
+        },
+        [setLog]
+    );
+
+    const clearAll = useCallback(() => {
         setLog([]);
         setConfirmClear(false);
-    }
+    }, [setLog]);
+
+    const handleExport = useCallback(() => {
+        if (sortedLog.length === 0) return;
+        const csv = buildLogCsv(sortedLog);
+        const filename = `fxchecker_log_${new Date().toISOString().slice(0, 10)}.csv`;
+        downloadCsv(csv, filename);
+    }, [sortedLog]);
+
 
 
     if (log.length === 0) {
@@ -34,29 +55,40 @@ export default function LogTab() {
                 <p className="text-xs uppercase tracking-widest text-fg-muted">
                     Conversion log · {log.length}
                 </p>
-                {!confirmClear ? (
-                    <button
-                        onClick={() => setConfirmClear(true)}
-                        className="text-xs uppercase tracking-widest text-fg-muted hover:text-red-400"
-                    >
-                        Clear log
-                    </button>
-                ) : (
-                    <div className="flex items-center gap-3 text-xs">
-                        <span className="text-fg-muted">Clear all entries?</span>
-                        <button onClick={clearAll} className="uppercase tracking-widest text-red-400">
-                            Confirm
-                        </button>
-                        <button
-                            onClick={() => setConfirmClear(false)}
-                            className="uppercase tracking-widest text-fg-muted"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                )}
-            </div>
 
+
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={handleExport}
+                        aria-label="Export conversion log as CSV"
+                        className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-fg-muted hover:text-accent"
+                    >
+                        <HiOutlineArrowDownTray className="w-3.5 h-3.5" />
+                        Export CSV
+                    </button>
+                    {!confirmClear ? (
+                        <button
+                            onClick={() => setConfirmClear(true)}
+                            className="text-xs uppercase tracking-widest text-fg-muted hover:text-red-400"
+                        >
+                            Clear log
+                        </button>
+                    ) : (
+                        <div className="flex items-center gap-3 text-xs">
+                            <span className="text-fg-muted">Clear all entries?</span>
+                            <button onClick={clearAll} className="uppercase tracking-widest text-red-400">
+                                Confirm
+                            </button>
+                            <button
+                                onClick={() => setConfirmClear(false)}
+                                className="uppercase tracking-widest text-fg-muted"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
             <div className="divide-y divide-border rounded-2xl bg-bg-elevated">
                 {[...log]
                     .sort((a, b) => b.timestamp - a.timestamp)

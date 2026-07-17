@@ -43,7 +43,7 @@ export default function HistoryTab() {
     const changePercent = open ? (change / open) * 100 : undefined;
 
     return (
-        <section className="pb-8">
+        <section  >
             <div className="flex flex-col gap-6 lg:flex-row lg:justify-between lg:items-center">
                 <HistoryStats
                     open={open}

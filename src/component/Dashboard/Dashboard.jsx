@@ -21,7 +21,7 @@ export default function Dashboard() {
     };
 
     return (
-        <section>
+        <section className="pb-8">
 
             <DashboardTabs
                 activeTab={activeTab}
