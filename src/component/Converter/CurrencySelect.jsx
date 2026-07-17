@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { FaCaretDown } from "react-icons/fa";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getCurrencyFlagUrl } from "@/lib/currencyFlags";
@@ -13,7 +13,7 @@ function FlagImage({ code, size = 20 }) {
     if (!src || hasError) {
         return (
             <div
-                className="shrink-0 rounded-full bg-neutral-700"
+                className="shrink-0 rounded-full bg-border"
                 style={{ width: size, height: size }}
             />
         );
@@ -21,7 +21,7 @@ function FlagImage({ code, size = 20 }) {
 
     return (
         <div
-            className="relative shrink-0 overflow-hidden rounded-full ring-1 ring-neutral-700"
+            className="relative shrink-0 overflow-hidden rounded-full ring-1 ring-border"
             style={{ width: size, height: size }}
         >
             <Image
@@ -36,14 +36,15 @@ function FlagImage({ code, size = 20 }) {
     );
 }
 
-export default function CurrencySelect({
+const CurrencySelect = forwardRef(function CurrencySelect({
     value,
     onChange,
     className = "w-28",
     placeholder = "Select currency",
     openUpward = false,
     excludeCodes = [],
-}) {
+}, ref
+) {
     const { currencies } = useCurrency();
 
     const [isOpen, setIsOpen] = useState(false);
@@ -55,20 +56,8 @@ export default function CurrencySelect({
 
     const hasValue = Boolean(value);
 
-    // const filtered = currencies.filter((currency) => {
-    //     const q = query.trim().toLowerCase();
-    //     if (!q) return true;
-
-    //     return (
-    //         currency.code.toLowerCase().includes(q) ||
-    //         currency.name?.toLowerCase().includes(q)
-    //     );
-    // });
-
-
-
     const filtered = currencies
-        .filter((currency) => !excludeCodes.includes(currency.code))  // <-- add this
+        .filter((currency) => !excludeCodes.includes(currency.code))
         .filter((currency) => {
             const q = query.trim().toLowerCase();
             if (!q) return true;
@@ -98,7 +87,10 @@ export default function CurrencySelect({
         setHighlightedIndex(0);
         requestAnimationFrame(() => inputRef.current?.focus());
     };
-
+    // Expose openDropdown to parent components via ref, e.g. ref.current.open()
+    useImperativeHandle(ref, () => ({
+        open: openDropdown,
+    }));
     const selectCurrency = (code) => {
         onChange({ target: { value: code } });
         setIsOpen(false);
@@ -135,15 +127,15 @@ export default function CurrencySelect({
                     items-center
                     gap-2
                     rounded-xl
-                    bg-[#3a3a3a]
+                    bg-border
                     px-3
                     py-3
                     text-sm
                     font-mono
-                    text-white
+                    text-fg
                     outline-none
                     text-left
-                    hover:bg-[#444]
+                    hover:bg-fg-muted/30
                     transition-colors
                     cursor-pointer
                 "
@@ -154,12 +146,12 @@ export default function CurrencySelect({
                         <span className="flex-1">{value}</span>
                     </>
                 ) : (
-                    <span className="flex-1 text-neutral-500">{placeholder}</span>
+                    <span className="flex-1 text-fg-muted">{placeholder}</span>
                 )}
 
                 <FaCaretDown
                     className={`
-                        h-4 w-4 shrink-0 text-neutral-400
+                        h-4 w-4 shrink-0 text-fg-muted
                         transition-transform duration-200
                         ${isOpen ? "rotate-180" : "rotate-0"}
                     `}
@@ -176,9 +168,9 @@ export default function CurrencySelect({
                         w-full
                         min-w-[16rem]
                         rounded-xl
-                        bg-[#252525]
+                        bg-bg-elevated
                         border
-                        border-neutral-700
+                        border-border
                         shadow-2xl
                         overflow-hidden
                         ${openUpward ? "bottom-full mb-2" : "top-full mt-2"}
@@ -195,22 +187,22 @@ export default function CurrencySelect({
                         placeholder="Search currency..."
                         className="
                             w-full
-                            bg-[#1b1b1b]
+                            bg-bg
                             px-3
                             py-2
                             text-sm
                             font-mono
-                            text-white
-                            placeholder-neutral-500
+                            text-fg
+                            placeholder-fg-muted
                             outline-none
                             border-b
-                            border-neutral-700
+                            border-border
                         "
                     />
 
-                    <ul className="max-h-56 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <ul className="max-h-56 overflow-y-auto scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                         {filtered.length === 0 && (
-                            <li className="px-3 py-2 text-sm font-mono text-neutral-500">
+                            <li className="px-3 py-2 text-sm font-mono text-fg-muted">
                                 No matches
                             </li>
                         )}
@@ -225,8 +217,8 @@ export default function CurrencySelect({
                                         flex w-full items-center gap-2 cursor-pointer
                                         px-3 py-2 text-sm font-mono text-left
                                         ${index === highlightedIndex
-                                            ? "bg-[#3a3a3a] text-lime-400"
-                                            : "text-white"
+                                            ? "bg-border text-accent"
+                                            : "text-fg"
                                         }
                                         ${currency.code === value ? "font-bold" : ""}
                                     `}
@@ -234,7 +226,7 @@ export default function CurrencySelect({
                                     <FlagImage code={currency.code} size={20} />
                                     <span>{currency.code}</span>
                                     {currency.name && (
-                                        <span className="ml-auto truncate text-xs text-neutral-500">
+                                        <span className="ml-auto truncate text-xs text-fg-muted">
                                             {currency.name}
                                         </span>
                                     )}
@@ -246,4 +238,6 @@ export default function CurrencySelect({
             )}
         </div>
     );
-}
+});
+
+export default CurrencySelect;

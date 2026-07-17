@@ -2,7 +2,8 @@
 
 import { useCurrency } from "@/context/CurrencyContext";
 import useLocalStorage from "@/lib/useLocalStorage";
-
+import { useEffect, useRef, useCallback } from "react";
+import { isTypingTarget } from "@/lib/keyboardUtils";
 import AmountInput from "./AmountInput";
 import CurrencySelect from "./CurrencySelect";
 import RateInfo from "./RateInfo";
@@ -37,8 +38,7 @@ export default function Converter() {
     const isFavorited = favorites.some(
         (f) => f.fromCurrency === fromCurrency && f.toCurrency === toCurrency
     );
-
-    const handleFavorite = () => {
+    const handleFavorite = useCallback(() => {
         setFavorites((prev) => {
             const exists = prev.some(
                 (f) => f.fromCurrency === fromCurrency && f.toCurrency === toCurrency
@@ -52,9 +52,9 @@ export default function Converter() {
 
             return [...prev, { fromCurrency, toCurrency }];
         });
-    };
+    }, [fromCurrency, toCurrency, setFavorites]);
 
-    const handleLog = () => {
+    const handleLog = useCallback(() => {
         if (!exchangeRate) return;
 
         setLog((prev) => [
@@ -69,8 +69,37 @@ export default function Converter() {
                 timestamp: Date.now(),
             },
         ]);
-    };
+    }, [fromCurrency, toCurrency, amount, convertedAmount, exchangeRate, setLog]);
 
+    const fromSelectRef = useRef(null);
+    const toSelectRef = useRef(null);
+
+    useEffect(() => {
+        function handleKeyDown(e) {
+            if (isTypingTarget(e.target)) return;
+            if (e.metaKey || e.ctrlKey || e.altKey) return;  
+
+            if (e.key === "c" || e.key === "C") {
+                e.preventDefault();
+                fromSelectRef.current?.open();
+            } else if (e.key === "r" || e.key === "R") {
+                e.preventDefault();
+                toSelectRef.current?.open();
+            } else if (e.key === "s" || e.key === "S") {
+                e.preventDefault();
+                swapCurrencies();
+            } else if (e.key === "f" || e.key === "F") {
+                e.preventDefault();
+                handleFavorite();
+            } else if (e.key === "l" || e.key === "L") {
+                e.preventDefault();
+                handleLog();
+            }
+        }
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [swapCurrencies, handleFavorite, handleLog]);
 
 
     return (
@@ -95,6 +124,7 @@ export default function Converter() {
                         />
 
                         <CurrencySelect
+                            ref={fromSelectRef}
                             value={fromCurrency}
                             onChange={(e) => setFromCurrency(e.target.value)}
                         />
@@ -121,6 +151,7 @@ export default function Converter() {
                         />
 
                         <CurrencySelect
+                            ref={toSelectRef}
                             value={toCurrency}
                             onChange={(e) => setToCurrency(e.target.value)}
                         />

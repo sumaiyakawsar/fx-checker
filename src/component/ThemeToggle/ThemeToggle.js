@@ -4,23 +4,20 @@ import { useTheme } from "@/context/ThemeContext";
 import { HiSun, HiMoon } from "react-icons/hi2";
 
 export default function ThemeToggle() {
-    const { theme, toggleTheme, mounted } = useTheme();
-
-    if (!mounted) return <div className="w-9 h-9" />;
+    const { theme, toggleTheme } = useTheme();
 
     return (
         <button
             onClick={toggleTheme}
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-            className="flex items-center justify-center w-9 h-9 
-            text-fg-muted hover:text-accent hover:border-accent
-            transition-colors"
+            aria-label="Toggle theme"
+            suppressHydrationWarning
+            className="flex items-center justify-center w-9 h-9 rounded
+                 text-fg-muted hover:text-accent 
+                 transition-colors"
         >
-            {theme === "dark" ? (
-                <HiMoon className="w-6 h-6" />
-            ) : (
-                <HiSun className="w-6 h-6" />
-            )}
+            <span suppressHydrationWarning>
+                {theme === "dark" ? <HiMoon className="w-4 h-4" /> : <HiSun className="w-4 h-4" />}
+            </span>
         </button>
     );
 }
