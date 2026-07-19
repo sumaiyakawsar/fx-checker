@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,73387,c=>{c.q("/fx-checker/_next/static/media/logo.3u8n627h_k4cc.svg")}]);
