@@ -12,7 +12,6 @@ export function CurrencyProvider({ children }) {
 
     const [amount, setAmount] = useState(1000);
 
-    // Initialize directly from the URL so there's no flash of default values
     const [fromCurrency, setFromCurrencyState] = useState(
         () => searchParams.get("from") || "USD"
     );
@@ -25,8 +24,11 @@ export function CurrencyProvider({ children }) {
     const [rates, setRates] = useState({});
     const [currencies, setCurrencies] = useState([]);
 
-    // Keep a ref to the latest searchParams so updateUrl doesn't need
-    // to be recreated (and doesn't go stale) every time the URL changes
+    // True when the last fetch failed and we're showing a cached/fallback rate instead
+    const [ratesStale, setRatesStale] = useState(false);
+    // Timestamp (ms) of the rate currently being displayed — fresh or cached
+    const [lastUpdated, setLastUpdated] = useState(null);
+
     const searchParamsRef = useRef(searchParams);
     useEffect(() => {
         searchParamsRef.current = searchParams;
@@ -64,8 +66,6 @@ export function CurrencyProvider({ children }) {
         updateUrl(toCurrency, fromCurrency);
     }, [fromCurrency, toCurrency, updateUrl]);
 
-    // On first load with no query params at all (e.g. a fresh visit to "/"),
-    // write the defaults into the URL so the page is bookmarkable immediately
     useEffect(() => {
         if (!searchParams.get("from") || !searchParams.get("to")) {
             updateUrl(fromCurrency, toCurrency);
@@ -98,6 +98,12 @@ export function CurrencyProvider({ children }) {
 
                 rates,
                 setRates,
+
+                ratesStale,
+                setRatesStale,
+
+                lastUpdated,
+                setLastUpdated,
             }}
         >
             {children}

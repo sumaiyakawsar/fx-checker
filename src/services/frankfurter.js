@@ -1,15 +1,25 @@
 const BASE_URL = "https://api.frankfurter.dev/v2";
 
-async function fetchAPI(url) {
-
-    const response = await fetch(url);
+async function fetchAPI(url, options = {}) {
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            Accept: "application/json",
+            ...options.headers,
+        },
+    });
 
     if (!response.ok) {
-        const text = await response.text();
-        console.log(response.status);
-        console.log(text);
+        let message = `HTTP ${response.status}`;
 
-        throw new Error(`HTTP ${response.status}`);
+        try {
+            const error = await response.json();
+            message = error.message || message;
+        } catch {
+            // Ignore if response isn't JSON
+        }
+
+        throw new Error(message);
     }
 
     return response.json();
@@ -75,12 +85,20 @@ function normalizeRates(data, quotes) {
     return map;
 }
 
+function getPreviousBusinessDay() {
+    const date = new Date();
+
+    do {
+        date.setDate(date.getDate() - 1);
+    } while (date.getDay() === 0 || date.getDay() === 6);
+
+    return date.toISOString().split("T")[0];
+}
+
 export async function getTickerRates(pairs) {
     const bases = [...new Set(pairs.map((p) => p.base))];
-
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = yesterday.toISOString().split("T")[0];
+ 
+    const dateStr = getPreviousBusinessDay();
 
     const perBase = await Promise.all(
         bases.map(async (base) => {
@@ -130,20 +148,8 @@ export async function getRates(base, quotes) {
     const symbols = quotes.join(",");
     const data = await fetchAPI(`${BASE_URL}/rates?base=${base}&quotes=${symbols}`);
 
-    const map = {};
-    if (Array.isArray(data)) {
-        data.forEach((entry) => {
-            if (quotes.includes(entry.quote)) map[entry.quote] = entry.rate;
-        });
-    } else if (data?.rates) {
-        Object.assign(map, data.rates);
-    } else if (data && typeof data === "object") {
-        quotes.forEach((q) => {
-            if (data[q] !== undefined) map[q] = data[q];
-        });
-    }
+    return normalizeRates(data, quotes);
 
-    return map;
 }
 
 
@@ -159,7 +165,7 @@ function getDateRangeForPeriod(range) {
 
     switch (range) {
         case "1D":
-            from.setDate(from.getDate() - 5); // buffer for weekends/holidays (EOD data only)
+            from.setDate(from.getDate() - 5);
             break;
         case "1W":
             from.setDate(from.getDate() - 7);
@@ -196,4 +202,3 @@ export async function getHistoricalRates(base, quote, range) {
 }
 
 
- 

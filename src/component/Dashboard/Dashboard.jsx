@@ -40,7 +40,7 @@ export default function Dashboard() {
                 )}
 
                 {activeTab === "Log" && <LogTab />}
-
+                
             </div>
 
         </section>

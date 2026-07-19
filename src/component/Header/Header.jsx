@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 
 import { getCurrencies } from "@/services/frankfurter"; 
-import ThemeToggle from "../ThemeToggle/ThemeToggle";
+import ThemeToggle from "./ThemeToggle";
 import logo from "@/app/logo.svg";
 
 export default function Header() {
@@ -21,7 +21,7 @@ export default function Header() {
     };
 
     return (
-        <header className="w-full h-16 bg-bg-elevated border-b border-border">
+        <header className="w-full h-16 bg-bg border-b border-border">
             <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-6">
 
                 {/* Logo */}

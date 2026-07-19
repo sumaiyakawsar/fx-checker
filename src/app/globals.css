@@ -5,9 +5,10 @@
 :root {
   --background: #0A0A0A;
   --foreground: #ededed;
-  --color-bg-elevated: #1b1b1b;
+  --color-bg-elevated: #171719;
+  --color-bg-subtle: #2E2E2E;
   --color-fg-muted: #a3a3a3;
-  --color-border: #262626;
+  --color-border: #202022;
   --color-accent: #CEF736;
   --color-accent-fg: #1a2e05;
 }
@@ -16,9 +17,10 @@
   --background: #ffffff;
   --foreground: #171717;
   --color-bg-elevated: #f0efe9;
+  --color-bg-subtle: #E6E4DC;
   --color-fg-muted: #6b6b63;
   --color-border: #d8d6cc;
-  --color-accent: #CEF736;
+  --color-accent: #6ec20d;
   --color-accent-fg: #365314;
 }
 
@@ -28,6 +30,7 @@
   --color-bg: var(--background);
   --color-fg: var(--foreground);
   --color-bg-elevated: var(--color-bg-elevated);
+  --color-bg-subtle: var(--color-bg-subtle);
   --color-fg-muted: var(--color-fg-muted);
   --color-border: var(--color-border);
   --color-accent: var(--color-accent);

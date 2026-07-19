@@ -28,12 +28,9 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <Suspense fallback={null}>
             <CurrencyProvider>
-
               {children}
-
             </CurrencyProvider>
           </Suspense>
-
         </ThemeProvider>
       </body>
     </html>

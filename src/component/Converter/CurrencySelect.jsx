@@ -1,41 +1,11 @@
 "use client";
-
-import Image from "next/image";
+ 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { FaCaretDown } from "react-icons/fa";
-import { useCurrency } from "@/context/CurrencyContext";
-import { getCurrencyFlagUrl } from "@/lib/currencyFlags";
+import { useCurrency } from "@/context/CurrencyContext"; 
+import FlagImage from "../UI/FlagImage";
 
-function FlagImage({ code, size = 20 }) {
-    const src = code ? getCurrencyFlagUrl(code, 40) : null;
-    const [hasError, setHasError] = useState(false);
-
-    if (!src || hasError) {
-        return (
-            <div
-                className="shrink-0 rounded-full bg-border"
-                style={{ width: size, height: size }}
-            />
-        );
-    }
-
-    return (
-        <div
-            className="relative shrink-0 overflow-hidden rounded-full ring-1 ring-border"
-            style={{ width: size, height: size }}
-        >
-            <Image
-                src={src}
-                alt={code}
-                fill
-                className="object-cover"
-                onError={() => setHasError(true)}
-                unoptimized
-            />
-        </div>
-    );
-}
-
+ 
 const CurrencySelect = forwardRef(function CurrencySelect({
     value,
     onChange,
@@ -127,7 +97,7 @@ const CurrencySelect = forwardRef(function CurrencySelect({
                     items-center
                     gap-2
                     rounded-xl
-                    bg-border
+                    bg-bg-subtle
                     px-3
                     py-3
                     text-sm

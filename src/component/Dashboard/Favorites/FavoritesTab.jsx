@@ -1,44 +1,57 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import useLocalStorage from "@/lib/useLocalStorage";
 import { useCurrency } from "@/context/CurrencyContext";
-import { getRates } from "@/services/frankfurter";
+import { getTickerRates } from "@/services/frankfurter";
+import { FaArrowRight, FaStar } from "react-icons/fa6";
+
 
 export default function FavoritesTab({ onLoadPair }) {
 
     const { rates, setRates, setFromCurrency, setToCurrency } = useCurrency();
 
     const [favorites, setFavorites] = useLocalStorage("fxchecker_favorites", []);
+    const [changes, setChanges] = useState({}); // key: `${from}${to}` -> % change
 
-    // Fetch rates for every unique base among the pinned pairs
     useEffect(() => {
         if (favorites.length === 0) return;
-
-        const basesNeeded = {};
-        favorites.forEach(({ fromCurrency, toCurrency }) => {
-            if (!basesNeeded[fromCurrency]) basesNeeded[fromCurrency] = new Set();
-            basesNeeded[fromCurrency].add(toCurrency);
-        });
 
         let cancelled = false;
 
         async function fetchAllRates() {
             try {
-                const entries = Object.entries(basesNeeded);
-                const results = await Promise.all(
-                    entries.map(([base, quoteSet]) => getRates(base, [...quoteSet]))
-                );
+                const pairs = favorites.map(({ fromCurrency, toCurrency }) => ({
+                    pair: `${fromCurrency}${toCurrency}`,
+                    base: fromCurrency,
+                    quote: toCurrency,
+                }));
 
-                if (!cancelled) {
-                    setRates((prev) => {
-                        const next = { ...prev };
-                        entries.forEach(([base], i) => {
-                            next[base] = { ...next[base], ...results[i] };
-                        });
-                        return next;
+                const results = await getTickerRates(pairs);
+                if (cancelled) return;
+
+                setRates((prev) => {
+                    const next = { ...prev };
+                    results.forEach(({ pair, rate }) => {
+                        const match = favorites.find(
+                            (f) => `${f.fromCurrency}${f.toCurrency}` === pair
+                        );
+                        if (!match || rate === null) return;
+                        next[match.fromCurrency] = {
+                            ...next[match.fromCurrency],
+                            [match.toCurrency]: rate,
+                        };
                     });
-                }
+                    return next;
+                });
+
+                setChanges((prev) => {
+                    const next = { ...prev };
+                    results.forEach(({ pair, change }) => {
+                        next[pair] = change;
+                    });
+                    return next;
+                });
             } catch (err) {
                 console.error("Failed to fetch favorite rates:", err);
             }
@@ -53,8 +66,9 @@ export default function FavoritesTab({ onLoadPair }) {
             favorites.map((f) => ({
                 ...f,
                 rate: rates?.[f.fromCurrency]?.[f.toCurrency] ?? null,
+                change: changes[`${f.fromCurrency}${f.toCurrency}`] ?? null,
             })),
-        [favorites, rates]
+        [favorites, rates, changes]
     );
 
     function unpin(fromCurrency, toCurrency) {
@@ -72,8 +86,8 @@ export default function FavoritesTab({ onLoadPair }) {
     if (favorites.length === 0) {
         return (
             <div className="rounded-2xl bg-bg-elevated p-10 text-center">
-                <p className="text-sm text-fg-muted">No pinned pairs yet.</p>
-                <p className="mt-2 text-xs text-fg-muted/70">
+                <p className="font-mono text-sm text-fg-muted">No pinned pairs yet.</p>
+                <p className="mt-2 font-mono text-xs text-fg-muted/70">
                     Pin a pair from the Converter to see it here.
                 </p>
             </div>
@@ -81,44 +95,64 @@ export default function FavoritesTab({ onLoadPair }) {
     }
 
     return (
-        <section className="space-y-6">
+        <section className="space-y-4">
+            <div className="overflow-hidden rounded-2xl bg-bg-elevated">
 
-            <p className="text-xs uppercase tracking-widest text-fg-muted">
-                Pinned pairs · {favorites.length}
-            </p>
+                <div className="divide-y divide-border ">
+                    {withRates.map(({ fromCurrency, toCurrency, rate, change }, i) => {
+                        const hasChange = change !== null && change !== undefined;
+                        const positive = hasChange && change >= 0;
+                        const colorClass = positive ? "text-accent" : "text-red-500";
 
-            <div className="divide-y divide-border rounded-2xl bg-bg-elevated">
-                {withRates.map(({ fromCurrency, toCurrency, rate }) => (
-                    <div
-                        key={`${fromCurrency}${toCurrency}`}
-                        className="flex items-center justify-between px-5 py-4"
-                    >
-                        <div>
-                            <p className="font-mono text-sm text-fg">
-                                {fromCurrency}/{toCurrency}
-                            </p>
-                            <p className="mt-0.5 font-mono text-lg text-accent">
-                                {rate ? rate.toFixed(4) : "—"}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
+                        return (
+                            <div
+                                key={`${fromCurrency}${toCurrency}`}
+                                className="group flex items-center gap-8 border-l-2 border-transparent px-5 py-3.5 transition-colors hover:border-l-accent hover:bg-bg/60"
                                 onClick={() => load(fromCurrency, toCurrency)}
-                                className="rounded-lg px-3 py-1.5 text-xs uppercase tracking-widest text-fg-muted hover:text-accent"
                             >
-                                Load
-                            </button>
-                            <button
-                                onClick={() => unpin(fromCurrency, toCurrency)}
-                                aria-label={`Unpin ${fromCurrency}/${toCurrency}`}
-                                className="text-accent hover:text-fg-muted"
-                                title="Unpin"
-                            >
-                                ★
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                                <div className="flex-1 flex items-center justify-between">
+                                    <div className="min-w-0 font-mono text-lg text-fg flex flex-row gap-2 items-center">
+                                        {fromCurrency}
+                                        <FaArrowRight className="" />
+                                        {toCurrency}
+                                    </div>
+
+                                    <div className="text-right">
+                                        <p className="font-mono text-base tabular-nums text-fg">
+                                            {rate ? rate.toFixed(4) : "—"}
+                                        </p>
+                                        <p className={`mt-0.5 font-mono text-xs font-semibold tabular-nums ${hasChange ? colorClass : "text-fg-muted/40"}`}>
+                                            {hasChange ? (
+                                                <>
+                                                    {positive ? "▲" : "▼"} {positive ? "+" : ""}
+                                                    {change.toFixed(2)}%
+                                                </>
+                                            ) : (
+                                                "—"
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-end gap-2.5 opacity-60 transition-opacity group-hover:opacity-100">
+
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            unpin(fromCurrency, toCurrency);
+                                        }}
+                                        aria-label={`Unpin ${fromCurrency}/${toCurrency}`}
+                                        title="Unpin"
+                                        className="text-accent hover:text-fg-muted"
+                                    >
+                                        <FaStar />
+
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </section>
     );

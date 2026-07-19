@@ -114,7 +114,7 @@ export default function Converter() {
                 <div className="flex flex-col items-center gap-5 md:flex-row p-6 md:p-8">
 
                     {/* SEND */}
-                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-bg p-4 min-w-0">
+                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-border p-4 min-w-0">
 
                         <AmountInput
                             label="Send"
@@ -135,13 +135,11 @@ export default function Converter() {
                         className="p-3 cursor-pointer rounded-xl bg-border hover:bg-fg-muted/40 flex items-center justify-center transition"
                         onClick={swapCurrencies}
                     >
-                        <HiArrowsRightLeft
-                            className="text-fg text-2xl"
-                        />
+                        <HiArrowsRightLeft className="text-fg text-2xl rotate-90 md:rotate-0" />
                     </button >
 
                     {/* RECEIVE */}
-                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-bg p-4 min-w-0">
+                    <div className="flex flex-1 items-end justify-between rounded-2xl bg-border p-4 min-w-0">
 
                         <AmountInput
                             label="Receive"

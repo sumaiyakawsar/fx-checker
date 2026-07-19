@@ -2,17 +2,16 @@
 
 import { useCallback, useMemo, useState } from "react";
 import useLocalStorage from "@/lib/useLocalStorage";
-import { formatTime } from "@/utils/formatDate";
+import { formatRelativeDay, formatRelativeTime } from "@/utils/formatDate";
 import { buildLogCsv, downloadCsv } from "@/lib/exportCSV";
 import { HiOutlineArrowDownTray } from "react-icons/hi2";
+import { IoCloseOutline } from "react-icons/io5";
 
 
 export default function LogTab() {
     const [log, setLog] = useLocalStorage("fxchecker_log", []);
     const [confirmClear, setConfirmClear] = useState(false);
 
-    // Computed once per log change, reused for both the visible list and the CSV export —
-    // avoids sorting the same array twice on every render.
     const sortedLog = useMemo(
         () => [...log].sort((a, b) => b.timestamp - a.timestamp),
         [log]
@@ -38,6 +37,19 @@ export default function LogTab() {
     }, [sortedLog]);
 
 
+    const groupedLog = useMemo(() => {
+        const groups = [];
+        let lastKey = null;
+        for (const entry of sortedLog) {
+            const key = new Date(entry.timestamp).toDateString();
+            if (key !== lastKey) {
+                groups.push({ key, label: formatRelativeDay(entry.timestamp), entries: [] });
+                lastKey = key;
+            }
+            groups[groups.length - 1].entries.push(entry);
+        }
+        return groups;
+    }, [sortedLog]);
 
     if (log.length === 0) {
         return (
@@ -52,9 +64,7 @@ export default function LogTab() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <p className="text-xs uppercase tracking-widest text-fg-muted">
-                    Conversion log · {log.length}
-                </p>
+                <p>                </p>
 
 
                 <div className="flex items-center gap-4">
@@ -89,39 +99,67 @@ export default function LogTab() {
                     )}
                 </div>
             </div>
-            <div className="divide-y divide-border rounded-2xl bg-bg-elevated">
-                {[...log]
-                    .sort((a, b) => b.timestamp - a.timestamp)
-                    .map((entry) => (
-                        <div
-                            key={entry.id}
-                            className="group flex items-center justify-between px-5 py-4"
-                        >
-                            <div>
-                                <p className="font-mono text-sm text-fg">
-                                    {entry.amount.toLocaleString()} {entry.fromCurrency}
-                                    <span className="mx-2 text-fg-muted">→</span>
-                                    <span className="text-accent">
-                                        {entry.convertedAmount.toLocaleString(undefined, {
-                                            maximumFractionDigits: 2,
-                                        })}{" "}
-                                        {entry.toCurrency}
-                                    </span>
-                                </p>
-                                <p className="mt-0.5 text-xs text-fg-muted">
-                                    {formatTime(entry.timestamp)} · 1 {entry.fromCurrency} ={" "}
-                                    {entry.exchangeRate.toFixed(4)} {entry.toCurrency}
-                                </p>
+
+            <div className="space-y-4">
+                {groupedLog.map((group) => {
+                    const dayNum = new Date(group.entries[0].timestamp).getDate();
+                    return (
+                        <div key={group.key} className="overflow-hidden rounded-2xl bg-bg-elevated">
+                            <div className="flex items-center gap-3 border-b border-border px-5 py-3">
+                                <p className="font-mono text-xl leading-none text-fg-muted">{dayNum}</p>
+                                <div>
+                                    <p className="font-mono text-[10px] uppercase tracking-widest text-fg-muted">
+                                        {group.label}
+                                    </p>
+                                    <p className="font-mono text-[10px] text-fg-muted/50">
+                                        {group.entries.length} {group.entries.length === 1 ? "entry" : "entries"}
+                                    </p>
+                                </div>
                             </div>
-                            <button
-                                onClick={() => deleteEntry(entry.id)}
-                                aria-label="Delete entry"
-                                className="text-fg-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
-                            >
-                                ✕
-                            </button>
+
+                            <div>
+                                {group.entries.map((entry, i) => (
+                                    <div key={entry.id} className="group flex gap-4 px-5 py-3">
+                                        <div className="flex flex-col items-center pt-1.5">
+                                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-fg-muted/40 group-hover:bg-accent" />
+                                            {i !== group.entries.length - 1 && (
+                                                <span className="mt-1.5 w-px flex-1 bg-border" />
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-1 items-center justify-between pb-1">
+                                            <div>
+                                                <p className="font-mono text-sm text-fg">
+                                                    {entry.amount.toLocaleString()} {entry.fromCurrency}
+                                                    <span className="mx-2 text-fg-muted">→</span>
+                                                    <span className="text-accent">
+                                                        {entry.convertedAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} {entry.toCurrency}
+                                                    </span>
+                                                </p>
+                                                <p className="mt-0.5 text-xs text-fg-muted">
+                                                    1 {entry.fromCurrency} = {entry.exchangeRate.toFixed(4)} {entry.toCurrency}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <span className="font-mono text-xs text-fg-muted">
+                                                    {formatRelativeTime(entry.timestamp)}
+                                                </span>
+                                                <button
+                                                    onClick={() => deleteEntry(entry.id)}
+                                                    aria-label="Delete entry"
+                                                    className="text-fg-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                                                >
+                                                    <IoCloseOutline />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    ))}
+                    );
+                })}
             </div>
         </div>
     );
