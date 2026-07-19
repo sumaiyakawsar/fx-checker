@@ -55,7 +55,7 @@ export default function Converter() {
     }, [fromCurrency, toCurrency, setFavorites]);
 
     const handleLog = useCallback(() => {
-        if (!exchangeRate) return;
+        if (!exchangeRate || !amount || amount <= 0) return;
 
         setLog((prev) => [
             ...prev,
@@ -163,6 +163,7 @@ export default function Converter() {
                         onFavorite={handleFavorite}
                         onLog={handleLog}
                         isFavorited={isFavorited}
+                        canLog={amount > 0}
                     />
                 </div>
             </div>

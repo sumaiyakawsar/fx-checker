@@ -8,7 +8,8 @@ import { ACTIONS } from "@/constants/actions";
 export default function RateInfo({
     onFavorite,
     onLog,
-    isFavorited,
+    isFavorited, canLog = true,
+
 }) {
     const {
         exchangeRate,
@@ -19,8 +20,8 @@ export default function RateInfo({
     if (!exchangeRate) return null;
 
     return (
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <p className="text-sm text-neutral-400">
+        <div className="flex flex-col gap-4 md:flex-row items-center md:justify-between">
+            <p className="font-mono text-sm text-neutral-400">
                 1 {fromCurrency} = {exchangeRate.toFixed(4)} {toCurrency}
             </p>
 
@@ -33,7 +34,9 @@ export default function RateInfo({
                     {isFavorited ? "Favorited" : ACTIONS.favorite}
                 </Button>
 
-                <Button variant="outline" onClick={onLog}>
+                <Button variant="outline" onClick={onLog} disabled={!canLog}
+                    className="w-full xs:w-auto whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                     Log Conversion
                 </Button>
             </div>

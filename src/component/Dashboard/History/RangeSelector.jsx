@@ -23,14 +23,14 @@ export default function RangeSelector({ selectedRange, setSelectedRange }) {
     }, [setSelectedRange]);
     
     return (
-        <div className="flex gap-1 rounded-lg shadow-lg bg-fg/5 p-1">
+        <div className="flex w-full gap-1 rounded-lg shadow-lg bg-fg/5 p-1 lg:w-auto">
             {RANGES.map((r) => (
                 <button
                     key={r}
                     onClick={() => setSelectedRange(r)}
-                    className={`rounded px-3 py-1.5 text-xs font-medium transition-colors ${selectedRange === r
-                        ? "bg-fg/10 text-fg"
-                        : "text-fg-muted hover:text-fg/70"
+                    className={`flex-1 rounded px-3 py-1.5 text-xs font-medium transition-colors lg:flex-none ${selectedRange === r
+                            ? "bg-fg/10 text-fg"
+                            : "text-fg-muted hover:text-fg/70"
                         }`}
                 >
                     {r}

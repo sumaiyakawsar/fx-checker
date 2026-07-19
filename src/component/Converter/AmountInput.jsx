@@ -17,7 +17,7 @@ export default function AmountInput({
                 value={value ?? ""}
                 readOnly={readOnly}
                 onChange={onChange}
-                className={`w-full bg-transparent text-5xl font-bold outline-none ${textColor}`}
+                className={`w-full font-mono bg-transparent text-5xl font-bold outline-none ${textColor}`}
             />
 
         </div>
