@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useState } from "react";
-import useLocalStorage from "@/lib/useLocalStorage";
+import useFavorites from "@/hooks/useFavorites";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getTickerRates } from "@/services/frankfurter";
 import { FaArrowRight, FaStar } from "react-icons/fa6";
@@ -11,8 +11,8 @@ export default function FavoritesTab({ onLoadPair }) {
 
     const { rates, setRates, setFromCurrency, setToCurrency } = useCurrency();
 
-    const [favorites, setFavorites] = useLocalStorage("fxchecker_favorites", []);
-    const [changes, setChanges] = useState({}); // key: `${from}${to}` -> % change
+    const { items: favorites, removeItem: removeFavorite } = useFavorites();
+    const [changes, setChanges] = useState({});
 
     useEffect(() => {
         if (favorites.length === 0) return;
@@ -72,9 +72,7 @@ export default function FavoritesTab({ onLoadPair }) {
     );
 
     function unpin(fromCurrency, toCurrency) {
-        setFavorites((prev) =>
-            prev.filter((f) => !(f.fromCurrency === fromCurrency && f.toCurrency === toCurrency))
-        );
+        removeFavorite({ fromCurrency, toCurrency });
     }
 
     function load(fromCurrency, toCurrency) {

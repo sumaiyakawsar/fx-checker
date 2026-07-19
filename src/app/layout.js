@@ -4,6 +4,7 @@ import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 
 
@@ -25,13 +26,17 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+
         <ThemeProvider>
-          <Suspense fallback={null}>
-            <CurrencyProvider>
-              {children}
-            </CurrencyProvider>
-          </Suspense>
+          <AuthProvider>
+            <Suspense fallback={null}>
+              <CurrencyProvider>
+                {children}
+              </CurrencyProvider>
+            </Suspense>
+          </AuthProvider>
         </ThemeProvider>
+
       </body>
     </html>
   );

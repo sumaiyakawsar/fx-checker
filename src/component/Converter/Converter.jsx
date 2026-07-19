@@ -1,7 +1,6 @@
 "use client";
 
 import { useCurrency } from "@/context/CurrencyContext";
-import useLocalStorage from "@/lib/useLocalStorage";
 import { useEffect, useRef, useCallback } from "react";
 import { isTypingTarget } from "@/lib/keyboardUtils";
 import AmountInput from "./AmountInput";
@@ -11,6 +10,8 @@ import RateInfo from "./RateInfo";
 import useExchangeRates from "@/hooks/useExchangeRates";
 import useCurrencies from "@/hooks/useCurrencies";
 import { HiArrowsRightLeft } from "react-icons/hi2";
+import useLogEntries from "@/hooks/useLogEntries";
+import useFavorites from "@/hooks/useFavorites";
 
 export default function Converter() {
     useCurrencies();
@@ -32,44 +33,39 @@ export default function Converter() {
         swapCurrencies
     } = useCurrency();
 
-    const [favorites, setFavorites] = useLocalStorage("fxchecker_favorites", []);
-    const [, setLog] = useLocalStorage("fxchecker_log", []);
+    const { items: favorites, addItem: addFavorite, removeItem: removeFavorite } = useFavorites();
+    const { addItem: addLog } = useLogEntries();
 
     const isFavorited = favorites.some(
         (f) => f.fromCurrency === fromCurrency && f.toCurrency === toCurrency
     );
+
+
     const handleFavorite = useCallback(() => {
-        setFavorites((prev) => {
-            const exists = prev.some(
-                (f) => f.fromCurrency === fromCurrency && f.toCurrency === toCurrency
-            );
+        const existing = favorites.find(
+            (f) => f.fromCurrency === fromCurrency && f.toCurrency === toCurrency
+        );
 
-            if (exists) {
-                return prev.filter(
-                    (f) => !(f.fromCurrency === fromCurrency && f.toCurrency === toCurrency)
-                );
-            }
-
-            return [...prev, { fromCurrency, toCurrency }];
-        });
-    }, [fromCurrency, toCurrency, setFavorites]);
+        if (existing) {
+            removeFavorite(existing);
+        } else {
+            addFavorite({ fromCurrency, toCurrency });
+        }
+    }, [fromCurrency, toCurrency, favorites, addFavorite, removeFavorite]);
 
     const handleLog = useCallback(() => {
         if (!exchangeRate || !amount || amount <= 0) return;
 
-        setLog((prev) => [
-            ...prev,
-            {
-                id: crypto.randomUUID(),
-                fromCurrency,
-                toCurrency,
-                amount,
-                convertedAmount,
-                exchangeRate,
-                timestamp: Date.now(),
-            },
-        ]);
-    }, [fromCurrency, toCurrency, amount, convertedAmount, exchangeRate, setLog]);
+        addLog({
+            id: crypto.randomUUID(),
+            fromCurrency,
+            toCurrency,
+            amount,
+            convertedAmount,
+            exchangeRate,
+            timestamp: Date.now(),
+        });
+    }, [fromCurrency, toCurrency, amount, convertedAmount, exchangeRate, addLog]);
 
     const fromSelectRef = useRef(null);
     const toSelectRef = useRef(null);
@@ -77,7 +73,7 @@ export default function Converter() {
     useEffect(() => {
         function handleKeyDown(e) {
             if (isTypingTarget(e.target)) return;
-            if (e.metaKey || e.ctrlKey || e.altKey) return;  
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
 
             if (e.key === "c" || e.key === "C") {
                 e.preventDefault();
@@ -93,13 +89,13 @@ export default function Converter() {
                 handleFavorite();
             } else if (e.key === "l" || e.key === "L") {
                 e.preventDefault();
-                handleLog();
+                if (amount > 0) handleLog();
             }
         }
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [swapCurrencies, handleFavorite, handleLog]);
+    }, [swapCurrencies, handleFavorite, handleLog, amount]);
 
 
     return (

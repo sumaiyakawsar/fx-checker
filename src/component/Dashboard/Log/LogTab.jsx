@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import useLocalStorage from "@/lib/useLocalStorage";
+import useLogEntries from "@/hooks/useLogEntries";
 import { formatRelativeDay, formatRelativeTime } from "@/utils/formatDate";
 import { buildLogCsv, downloadCsv } from "@/lib/exportCSV";
 import { HiOutlineArrowDownTray } from "react-icons/hi2";
@@ -9,7 +9,7 @@ import { IoCloseOutline } from "react-icons/io5";
 
 
 export default function LogTab() {
-    const [log, setLog] = useLocalStorage("fxchecker_log", []);
+    const { items: log, removeItem: removeLogEntry, clearAll } = useLogEntries();
     const [confirmClear, setConfirmClear] = useState(false);
 
     const sortedLog = useMemo(
@@ -18,16 +18,16 @@ export default function LogTab() {
     );
 
     const deleteEntry = useCallback(
-        (id) => {
-            setLog((prev) => prev.filter((entry) => entry.id !== id));
+        (entry) => {
+            removeLogEntry(entry);
         },
-        [setLog]
+        [removeLogEntry]
     );
 
-    const clearAll = useCallback(() => {
-        setLog([]);
+    const handleClearAll = useCallback(() => {
+        clearAll();
         setConfirmClear(false);
-    }, [setLog]);
+    }, [clearAll]);
 
     const handleExport = useCallback(() => {
         if (sortedLog.length === 0) return;
@@ -86,7 +86,7 @@ export default function LogTab() {
                     ) : (
                         <div className="flex items-center gap-3 text-xs">
                             <span className="text-fg-muted">Clear all entries?</span>
-                            <button onClick={clearAll} className="uppercase tracking-widest text-red-400">
+                            <button onClick={handleClearAll} className="uppercase tracking-widest text-red-400">
                                 Confirm
                             </button>
                             <button
@@ -146,7 +146,7 @@ export default function LogTab() {
                                                     {formatRelativeTime(entry.timestamp)}
                                                 </span>
                                                 <button
-                                                    onClick={() => deleteEntry(entry.id)}
+                                                    onClick={() => deleteEntry(entry)}
                                                     aria-label="Delete entry"
                                                     className="text-fg-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
                                                 >

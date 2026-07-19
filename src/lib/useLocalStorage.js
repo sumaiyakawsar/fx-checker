@@ -1,17 +1,15 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 
-const listeners = new Map(); // key -> Set<callback>
-const cache = new Map();     // key -> { raw: string|null, parsed: any }
+const listeners = new Map();
+const cache = new Map();
 
 function getListeners(key) {
     if (!listeners.has(key)) listeners.set(key, new Set());
     return listeners.get(key);
 }
 
-// Returns a cached parsed value, only re-parsing when the raw
-// localStorage string has actually changed since last read.
 function readValue(key, initialValue) {
     if (typeof window === "undefined") return initialValue;
 
@@ -51,15 +49,22 @@ function subscribe(key, callback) {
 }
 
 export default function useLocalStorage(key, initialValue) {
+    const initialValueRef = useRef(initialValue);
+
+    // Keep the ref in sync AFTER render, not during it.
+    useEffect(() => {
+        initialValueRef.current = initialValue;
+    });
+
     const value = useSyncExternalStore(
-        (callback) => subscribe(key, callback),
-        () => readValue(key, initialValue),
+        useCallback((callback) => subscribe(key, callback), [key]),
+        useCallback(() => readValue(key, initialValueRef.current), [key]),
         () => initialValue // server snapshot
     );
 
     const setValue = useCallback(
         (next) => {
-            const prev = readValue(key, initialValue);
+            const prev = readValue(key, initialValueRef.current);
             const resolved = typeof next === "function" ? next(prev) : next;
 
             const raw = JSON.stringify(resolved);
@@ -69,13 +74,10 @@ export default function useLocalStorage(key, initialValue) {
                 // storage full or unavailable
             }
 
-            // update cache immediately so the next getSnapshot call
-            // (triggered by the notify below) sees the new value
             cache.set(key, { raw, parsed: resolved });
-
             getListeners(key).forEach((callback) => callback());
         },
-        [key, initialValue]
+        [key]
     );
 
     return [value, setValue];
