@@ -5,19 +5,37 @@ import Image from "next/image";
 
 import { getCurrencies } from "@/services/frankfurter";
 import ThemeToggle from "./ThemeToggle";
-import AuthModal from "../Auth/AuthModal";
+import AuthModal from "../Auth/AuthModal"; 
+import { isTypingTarget } from "@/lib/keyboardUtils";
 import useAuth from "@/lib/useAuth";
 import logo from "@/app/logo.svg";
+import ShortcutsModal from "./ShortcutsModal";
 
 export default function Header() {
     const [currencyCount, setCurrencyCount] = useState(null);
     const [authOpen, setAuthOpen] = useState(false);
+    const [shortcutsOpen, setShortcutsOpen] = useState(false);
     const { user, loading, signOut } = useAuth();
 
     useEffect(() => {
         getCurrencies()
             .then((data) => setCurrencyCount(data.length))
             .catch((err) => console.error("Failed to load currencies:", err));
+    }, []);
+
+    useEffect(() => {
+        function handleKeyDown(e) {
+            if (isTypingTarget(e.target)) return;
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+            if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+                e.preventDefault();
+                setShortcutsOpen((prev) => !prev);
+            }
+        }
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
     }, []);
 
     const HEADER_INFO = {
@@ -27,7 +45,7 @@ export default function Header() {
 
     return (
         <>
-            <header className="w-full h-16 bg-bg border-b border-border">
+            <header className="relative w-full h-16 bg-bg border-b border-border">
                 <div className="container mx-auto h-full flex items-center justify-between px-4 sm:px-6">
 
                     <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -68,10 +86,26 @@ export default function Header() {
                             )
                         )}
 
+                        {/* Shortcuts Dropdown Trigger */}
+                        <button
+                            onClick={() => setShortcutsOpen((prev) => !prev)}
+                            className={`flex items-center justify-center w-7 h-7 rounded-lg border text-fg font-mono text-xs transition ${shortcutsOpen
+                                    ? "bg-bg-subtle border-fg-muted"
+                                    : "border-border hover:bg-bg-subtle"
+                                }`}
+                            title="Keyboard Shortcuts (?)"
+                            aria-label="Keyboard Shortcuts"
+                        >
+                            ?
+                        </button>
+
                         <ThemeToggle />
                     </div>
 
                 </div>
+
+                {/* Dropdown Panel */}
+                <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
             </header>
 
             <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
