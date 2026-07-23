@@ -5,7 +5,7 @@ import useFavorites from "@/hooks/useFavorites";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getTickerRates } from "@/services/frankfurter";
 import { FaArrowRight, FaStar } from "react-icons/fa6";
-
+import { toasts } from "@/lib/toast";
 
 export default function FavoritesTab({ onLoadPair }) {
 
@@ -73,6 +73,7 @@ export default function FavoritesTab({ onLoadPair }) {
 
     function unpin(fromCurrency, toCurrency) {
         removeFavorite({ fromCurrency, toCurrency });
+        toasts.favoriteRemoved(fromCurrency, toCurrency);
     }
 
     function load(fromCurrency, toCurrency) {
