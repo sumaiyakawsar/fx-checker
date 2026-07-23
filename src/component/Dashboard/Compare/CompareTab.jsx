@@ -15,7 +15,7 @@ const DEFAULT_TARGETS = ["EUR", "GBP", "JPY", "AUD"];
 
 export default function CompareTab() {
 
-    const { currencies, rates, setRates, amount, fromCurrency } = useCurrency();
+    const { currencies, rates, setRates, amount, fromCurrency, toCurrency } = useCurrency();
 
     const [targets, setTargets] = useLocalStorage("fxchecker_compare_targets", DEFAULT_TARGETS);
     const [adding, setAdding] = useState(false);
@@ -58,13 +58,13 @@ export default function CompareTab() {
 
     const results = useMemo(() => {
         return targets
-            .filter((code) => code !== fromCurrency)
+            .filter((code) => code !== fromCurrency && code !== toCurrency) // Exclude both fromCurrency and toCurrency
             .map((code) => {
                 const rate = rates?.[fromCurrency]?.[code] ?? null;
                 const name = currencies.find((c) => c.code === code)?.name ?? null;
                 return { code, name, rate, value: rate ? numericAmount * rate : null };
             });
-    }, [targets, fromCurrency, rates, numericAmount, currencies]);
+    }, [targets, fromCurrency, toCurrency, rates, numericAmount, currencies]);
 
     const isFavorite = (code) =>
         favorites.some(
@@ -87,14 +87,8 @@ export default function CompareTab() {
         }
     }
 
-    // function removeTarget(code) {
-    //     setTargets((prev) => prev.filter((c) => c !== code));
-    // }
 
-    // function addTarget(code) {
-    //     setTargets((prev) => (prev.includes(code) ? prev : [...prev, code]));
-    //     setAdding(false);
-    // }
+
     function addTarget(code) {
         if (!code) return;
         setTargets((prev) => {
@@ -190,7 +184,7 @@ export default function CompareTab() {
                                     onChange={(e) => addTarget(e.target.value)}
                                     className="w-full"
                                     openUpward
-                                    excludeCodes={[fromCurrency, ...targets]}
+                                    excludeCodes={[fromCurrency, toCurrency, ...targets]}
                                 />
                             </div>
                         </div>
