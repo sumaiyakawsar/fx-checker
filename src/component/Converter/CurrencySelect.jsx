@@ -1,11 +1,16 @@
 "use client";
- 
+
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { FaCaretDown } from "react-icons/fa";
-import { useCurrency } from "@/context/CurrencyContext"; 
+import { FaCaretDown, FaCheck } from "react-icons/fa";
+import { useCurrency } from "@/context/CurrencyContext";
 import FlagImage from "../UI/FlagImage";
 
- 
+const POPULAR_CURRENCY_CODES = [
+    "USD",
+    "EUR",
+    "GBP",  
+];
+
 const CurrencySelect = forwardRef(function CurrencySelect({
     value,
     onChange,
@@ -26,17 +31,33 @@ const CurrencySelect = forwardRef(function CurrencySelect({
 
     const hasValue = Boolean(value);
 
-    const filtered = currencies
-        .filter((currency) => !excludeCodes.includes(currency.code))
-        .filter((currency) => {
-            const q = query.trim().toLowerCase();
-            if (!q) return true;
+    const matchesQuery = (currency, q) => {
+        if (!q) return true;
+        return (
+            currency.code.toLowerCase().includes(q) ||
+            currency.name?.toLowerCase().includes(q)
+        );
+    };
 
-            return (
-                currency.code.toLowerCase().includes(q) ||
-                currency.name?.toLowerCase().includes(q)
-            );
-        });
+    const q = query.trim().toLowerCase();
+
+    const available = currencies.filter(
+        (currency) => !excludeCodes.includes(currency.code)
+    );
+
+    const popular = POPULAR_CURRENCY_CODES
+        .map((code) => available.find((currency) => currency.code === code))
+        .filter(Boolean)
+        .filter((currency) => matchesQuery(currency, q));
+
+    const popularCodes = new Set(popular.map((currency) => currency.code));
+
+    const other = available
+        .filter((currency) => !popularCodes.has(currency.code))
+        .filter((currency) => matchesQuery(currency, q));
+
+ 
+    const filtered = [...popular, ...other];
 
     // Close on outside click
     useEffect(() => {
@@ -57,10 +78,12 @@ const CurrencySelect = forwardRef(function CurrencySelect({
         setHighlightedIndex(0);
         requestAnimationFrame(() => inputRef.current?.focus());
     };
+
     // Expose openDropdown to parent components via ref, e.g. ref.current.open()
     useImperativeHandle(ref, () => ({
         open: openDropdown,
     }));
+
     const selectCurrency = (code) => {
         onChange({ target: { value: code } });
         setIsOpen(false);
@@ -83,6 +106,38 @@ const CurrencySelect = forwardRef(function CurrencySelect({
             setIsOpen(false);
             setQuery("");
         }
+    };
+
+    const renderRow = (currency, index) => {
+        const isSelected = currency.code === value;
+        const isHighlighted = index === highlightedIndex;
+
+        return (
+            <li key={currency.code}>
+                <button
+                    type="button"
+                    onClick={() => selectCurrency(currency.code)}
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    className={`
+                        flex w-full items-center gap-2 cursor-pointer
+                        px-3 py-2 text-sm font-mono text-left
+                        ${isHighlighted ? "bg-border text-accent" : "text-fg"}
+                        ${isSelected ? "font-bold" : ""}
+                    `}
+                >
+                    <FlagImage code={currency.code} size={20} />
+                    <span>{currency.code}</span>
+                    {currency.name && (
+                        <span className="ml-auto truncate text-xs text-fg-muted">
+                            {currency.name}
+                        </span>
+                    )}
+                    {isSelected && (
+                        <FaCheck className="ml-2 h-3 w-3 shrink-0 text-accent" />
+                    )}
+                </button>
+            </li>
+        );
     };
 
     return (
@@ -136,7 +191,7 @@ const CurrencySelect = forwardRef(function CurrencySelect({
                         z-20
                         right-0
                         w-full
-                        min-w-[16rem]
+                        min-w-[20rem]
                         rounded-xl
                         bg-bg-elevated
                         border
@@ -177,32 +232,25 @@ const CurrencySelect = forwardRef(function CurrencySelect({
                             </li>
                         )}
 
-                        {filtered.map((currency, index) => (
-                            <li key={currency.code}>
-                                <button
-                                    type="button"
-                                    onClick={() => selectCurrency(currency.code)}
-                                    onMouseEnter={() => setHighlightedIndex(index)}
-                                    className={`
-                                        flex w-full items-center gap-2 cursor-pointer
-                                        px-3 py-2 text-sm font-mono text-left
-                                        ${index === highlightedIndex
-                                            ? "bg-border text-accent"
-                                            : "text-fg"
-                                        }
-                                        ${currency.code === value ? "font-bold" : ""}
-                                    `}
-                                >
-                                    <FlagImage code={currency.code} size={20} />
-                                    <span>{currency.code}</span>
-                                    {currency.name && (
-                                        <span className="ml-auto truncate text-xs text-fg-muted">
-                                            {currency.name}
-                                        </span>
-                                    )}
-                                </button>
-                            </li>
-                        ))}
+                        {popular.length > 0 && (
+                            <>
+                                <li className="px-3 pt-2 pb-1 text-[10px] font-mono uppercase tracking-wide text-fg-muted">
+                                    Popular ({popular.length})
+                                </li>
+                                {popular.map((currency, index) => renderRow(currency, index))}
+                            </>
+                        )}
+
+                        {other.length > 0 && (
+                            <>
+                                <li className="px-3 pt-2 pb-1 text-[10px] font-mono uppercase tracking-wide text-fg-muted">
+                                    Other currencies ({other.length})
+                                </li>
+                                {other.map((currency, index) =>
+                                    renderRow(currency, popular.length + index)
+                                )}
+                            </>
+                        )}
                     </ul>
                 </div>
             )}

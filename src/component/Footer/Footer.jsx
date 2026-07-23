@@ -9,7 +9,7 @@ export default function Footer() {
     { icon: <FaInstagram />, href: "https://www.instagram.com/devsume/", label: "instagram" },
   ];
   return (
-    <footer className="container flex items-center gap-8 w-full text-xs py-8  justify-between mx-auto mt-14 px-6  ">
+    <footer className="container flex items-center gap-8 w-full text-xs justify-between mx-auto px-6 py-8">
       <div className="text-center ">
         <span>Challenge by </span>
         <a href="https://www.frontendmentor.io?ref=challenge" className="text-accent">Frontend Mentor</a>.

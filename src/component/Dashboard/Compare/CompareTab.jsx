@@ -8,6 +8,8 @@ import { getRates } from "@/services/frankfurter";
 import useLocalStorage from "@/lib/useLocalStorage";
 import FlagImage from "@/component/UI/FlagImage";
 import CurrencySelect from "@/component/Converter/CurrencySelect";
+import { toasts } from "@/lib/toast";
+import useFavorites from "@/hooks/useFavorites";
 
 const DEFAULT_TARGETS = ["EUR", "GBP", "JPY", "AUD"];
 
@@ -19,7 +21,11 @@ export default function CompareTab() {
     const [adding, setAdding] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const [favorites, setFavorites] = useLocalStorage("fxchecker_favorites", []);
+    const {
+        items: favorites,
+        addItem: addFavorite,
+        removeItem: removeFavorite,
+    } = useFavorites();
 
     const numericAmount = Number(amount) || 0;
 
@@ -65,27 +71,45 @@ export default function CompareTab() {
             (f) => f.fromCurrency === fromCurrency && f.toCurrency === code
         );
 
+
+
     function toggleFavorite(code) {
-        setFavorites((prev) => {
-            const exists = prev.some(
-                (f) => f.fromCurrency === fromCurrency && f.toCurrency === code
-            );
-            if (exists) {
-                return prev.filter(
-                    (f) => !(f.fromCurrency === fromCurrency && f.toCurrency === code)
-                );
+        const existing = favorites.find(
+            (f) => f.fromCurrency === fromCurrency && f.toCurrency === code
+        );
+
+        if (existing) {
+            removeFavorite(existing);
+            toasts.favoriteRemoved(fromCurrency, code);
+        } else {
+            addFavorite({ fromCurrency, toCurrency: code });
+            toasts.favoriteAdded(fromCurrency, code);
+        }
+    }
+
+    // function removeTarget(code) {
+    //     setTargets((prev) => prev.filter((c) => c !== code));
+    // }
+
+    // function addTarget(code) {
+    //     setTargets((prev) => (prev.includes(code) ? prev : [...prev, code]));
+    //     setAdding(false);
+    // }
+    function addTarget(code) {
+        if (!code) return;
+        setTargets((prev) => {
+            if (!prev.includes(code)) {
+                toasts.compareAdded(code);
+                return [...prev, code];
             }
-            return [...prev, { fromCurrency, toCurrency: code }];
+            return prev;
         });
+        setAdding(false);
     }
 
     function removeTarget(code) {
         setTargets((prev) => prev.filter((c) => c !== code));
-    }
-
-    function addTarget(code) {
-        setTargets((prev) => (prev.includes(code) ? prev : [...prev, code]));
-        setAdding(false);
+        toasts.compareRemoved(code);
     }
 
     return (

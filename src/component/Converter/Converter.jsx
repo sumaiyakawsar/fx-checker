@@ -12,6 +12,7 @@ import useCurrencies from "@/hooks/useCurrencies";
 import { HiArrowsRightLeft } from "react-icons/hi2";
 import useLogEntries from "@/hooks/useLogEntries";
 import useFavorites from "@/hooks/useFavorites";
+import { toasts } from "@/lib/toast";
 
 export default function Converter() {
     useCurrencies();
@@ -39,7 +40,17 @@ export default function Converter() {
     const isFavorited = favorites.some(
         (f) => f.fromCurrency === fromCurrency && f.toCurrency === toCurrency
     );
+    const handleFromChange = useCallback((newCode) => {
+        if (newCode === fromCurrency) return;
+        setFromCurrency(newCode);
+        toasts.fromCurrencyChanged(newCode);
+    }, [fromCurrency, setFromCurrency]);
 
+    const handleToChange = useCallback((newCode) => {
+        if (newCode === toCurrency) return;
+        setToCurrency(newCode);
+        toasts.toCurrencyChanged(newCode);
+    }, [toCurrency, setToCurrency]);
 
     const handleFavorite = useCallback(() => {
         const existing = favorites.find(
@@ -48,8 +59,11 @@ export default function Converter() {
 
         if (existing) {
             removeFavorite(existing);
+            toasts.favoriteRemoved(fromCurrency, toCurrency);
         } else {
             addFavorite({ fromCurrency, toCurrency });
+            toasts.favoriteAdded(fromCurrency, toCurrency);
+
         }
     }, [fromCurrency, toCurrency, favorites, addFavorite, removeFavorite]);
 
@@ -65,7 +79,15 @@ export default function Converter() {
             exchangeRate,
             timestamp: Date.now(),
         });
+
+        toasts.logAdded(fromCurrency, toCurrency);
+
     }, [fromCurrency, toCurrency, amount, convertedAmount, exchangeRate, addLog]);
+
+    const handleSwap = useCallback(() => {
+        toasts.swapped(toCurrency, fromCurrency);
+        swapCurrencies();
+    }, [fromCurrency, toCurrency, swapCurrencies]);
 
     const fromSelectRef = useRef(null);
     const toSelectRef = useRef(null);
@@ -83,7 +105,7 @@ export default function Converter() {
                 toSelectRef.current?.open();
             } else if (e.key === "s" || e.key === "S") {
                 e.preventDefault();
-                swapCurrencies();
+                handleSwap();
             } else if (e.key === "f" || e.key === "F") {
                 e.preventDefault();
                 handleFavorite();
@@ -95,7 +117,7 @@ export default function Converter() {
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [swapCurrencies, handleFavorite, handleLog, amount]);
+    }, [handleSwap, handleFavorite, handleLog, amount]);
 
 
     return (
@@ -122,14 +144,14 @@ export default function Converter() {
                         <CurrencySelect
                             ref={fromSelectRef}
                             value={fromCurrency}
-                            onChange={(e) => setFromCurrency(e.target.value)}
+                            onChange={(e) => handleFromChange(e.target.value)}
                         />
                     </div>
 
                     {/* SWAP */}
                     <button
                         className="p-3 cursor-pointer rounded-xl bg-border hover:bg-fg-muted/40 flex items-center justify-center transition"
-                        onClick={swapCurrencies}
+                        onClick={handleSwap}
                     >
                         <HiArrowsRightLeft className="text-fg text-2xl rotate-90 md:rotate-0" />
                     </button >
@@ -147,7 +169,7 @@ export default function Converter() {
                         <CurrencySelect
                             ref={toSelectRef}
                             value={toCurrency}
-                            onChange={(e) => setToCurrency(e.target.value)}
+                            onChange={(e) => handleToChange(e.target.value)}
                         />
 
                     </div>

@@ -6,7 +6,7 @@ import { formatRelativeDay, formatRelativeTime } from "@/utils/formatDate";
 import { buildLogCsv, downloadCsv } from "@/lib/exportCSV";
 import { HiOutlineArrowDownTray } from "react-icons/hi2";
 import { IoCloseOutline } from "react-icons/io5";
-
+import { toasts } from "@/lib/toast";
 
 export default function LogTab() {
     const { items: log, removeItem: removeLogEntry, clearAll } = useLogEntries();
@@ -20,6 +20,7 @@ export default function LogTab() {
     const deleteEntry = useCallback(
         (entry) => {
             removeLogEntry(entry);
+            toasts.logEntryRemoved(entry.fromCurrency, entry.toCurrency);
         },
         [removeLogEntry]
     );
@@ -27,6 +28,7 @@ export default function LogTab() {
     const handleClearAll = useCallback(() => {
         clearAll();
         setConfirmClear(false);
+        toasts.logCleared();
     }, [clearAll]);
 
     const handleExport = useCallback(() => {
@@ -34,8 +36,8 @@ export default function LogTab() {
         const csv = buildLogCsv(sortedLog);
         const filename = `fxchecker_log_${new Date().toISOString().slice(0, 10)}.csv`;
         downloadCsv(csv, filename);
+        toasts.csvExported(filename);
     }, [sortedLog]);
-
 
     const groupedLog = useMemo(() => {
         const groups = [];
@@ -63,41 +65,38 @@ export default function LogTab() {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <p>                </p>
+            <div className="flex items-center justify-end gap-4">
 
-
-                <div className="flex items-center gap-4">
+                <button
+                    onClick={handleExport}
+                    aria-label="Export conversion log as CSV"
+                    className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-fg-muted hover:text-accent"
+                >
+                    <HiOutlineArrowDownTray className="w-3.5 h-3.5" />
+                    Export CSV
+                </button>
+                {!confirmClear ? (
                     <button
-                        onClick={handleExport}
-                        aria-label="Export conversion log as CSV"
-                        className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-fg-muted hover:text-accent"
+                        onClick={() => setConfirmClear(true)}
+                        className="text-xs uppercase tracking-widest text-fg-muted hover:text-red-400"
                     >
-                        <HiOutlineArrowDownTray className="w-3.5 h-3.5" />
-                        Export CSV
+                        Clear log
                     </button>
-                    {!confirmClear ? (
-                        <button
-                            onClick={() => setConfirmClear(true)}
-                            className="text-xs uppercase tracking-widest text-fg-muted hover:text-red-400"
-                        >
-                            Clear log
+                ) : (
+                    <div className="flex items-center gap-3 text-xs">
+                        <span className="text-fg-muted">Clear all entries?</span>
+                        <button onClick={handleClearAll} className="uppercase tracking-widest text-red-400">
+                            Confirm
                         </button>
-                    ) : (
-                        <div className="flex items-center gap-3 text-xs">
-                            <span className="text-fg-muted">Clear all entries?</span>
-                            <button onClick={handleClearAll} className="uppercase tracking-widest text-red-400">
-                                Confirm
-                            </button>
-                            <button
-                                onClick={() => setConfirmClear(false)}
-                                className="uppercase tracking-widest text-fg-muted"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    )}
-                </div>
+                        <button
+                            onClick={() => setConfirmClear(false)}
+                            className="uppercase tracking-widest text-fg-muted"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
+
             </div>
 
             <div className="space-y-4">

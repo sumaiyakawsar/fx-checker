@@ -5,6 +5,7 @@ import "./globals.css";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
+import AppToaster from "@/component/UI/AppToaster";
 
 
 
@@ -36,7 +37,8 @@ export default function RootLayout({ children }) {
             </Suspense>
           </AuthProvider>
         </ThemeProvider>
-
+        <AppToaster />
+        
       </body>
     </html>
   );
