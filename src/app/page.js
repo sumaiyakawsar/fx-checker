@@ -3,6 +3,7 @@ import LiveTicker from "@/component/LiveTicker/LiveTicker";
 import Converter from "@/component/Converter/Converter";
 import Dashboard from "@/component/Dashboard/Dashboard"; 
 import StaleRatesBanner from "@/component/UI/StaleRatesBanner/StaleRatesBanner";
+import Footer from "@/component/Footer/Footer";
 
 export default function Home() {
     return (
@@ -14,6 +15,8 @@ export default function Home() {
                 <Converter />
                 <Dashboard />
             </div>
+
+            <Footer/>
         </main>
     );
 }

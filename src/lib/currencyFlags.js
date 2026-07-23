@@ -41,7 +41,7 @@ const CURRENCY_TO_COUNTRY = {
  * Falls back to the first two letters of the currency code
  * (works for most: USD -> us, JPY -> jp).
  */
-export function getCurrencyCountryCode(currencyCode) {
+function getCurrencyCountryCode(currencyCode) {
     if (!currencyCode) return null;
 
     const override = CURRENCY_TO_COUNTRY[currencyCode.toUpperCase()];
