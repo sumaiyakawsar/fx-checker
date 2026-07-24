@@ -7,7 +7,7 @@ async function fetchAPI(url, options = {}) {
             Accept: "application/json",
             ...options.headers,
         },
-    });
+    }); 
 
     if (!response.ok) {
         let message = `HTTP ${response.status}`;
@@ -27,7 +27,8 @@ async function fetchAPI(url, options = {}) {
 
 /*
 |--------------------------------------------------------------------------
-| Get Supported Currencies
+| Get Supported Currencies 
+| https://api.frankfurter.dev/v2/currencies 
 |--------------------------------------------------------------------------
 */
 
@@ -43,6 +44,7 @@ export async function getCurrencies() {
 /*
 |--------------------------------------------------------------------------
 | Convert Currency
+| https://api.frankfurter.dev/v2/rate/from/to
 |--------------------------------------------------------------------------
 */
 
@@ -68,6 +70,7 @@ export async function convertCurrency(
 |--------------------------------------------------------------------------
 | Groups pairs by base currency so each base only needs one "latest" call
 | and one "yesterday" call, instead of one call per pair.
+| 
 */
 function normalizeRates(data, quotes) {
     const map = {};
@@ -140,6 +143,7 @@ export async function getTickerRates(pairs) {
 /*
 |--------------------------------------------------------------------------
 | Get Rates (base -> multiple quotes, for Compare tab)
+| https://api.frankfurter.dev/rates?base=USD&quotes=EUR`
 |--------------------------------------------------------------------------
 */
 export async function getRates(base, quotes) {
@@ -156,6 +160,7 @@ export async function getRates(base, quotes) {
 /*
 |--------------------------------------------------------------------------
 | Get Historical Rates (for History tab chart)
+| https://api.frankfurter.dev/v2/rates?base=USD&quotes=JPY&from=2026-04-23&TO=2026-07-23
 |--------------------------------------------------------------------------
 */
 function getDateRangeForPeriod(range) {
@@ -195,7 +200,8 @@ export async function getHistoricalRates(base, quote, range) {
     const params = new URLSearchParams({ base, quotes: quote, from, to });
 
     const data = await fetchAPI(`${BASE_URL}/rates?${params.toString()}`);
-
+ 
+    
     return data
         .map((row) => ({ date: row.date, rate: row.rate }))
         .sort((a, b) => new Date(a.date) - new Date(b.date));

@@ -40,6 +40,7 @@ export default function Converter() {
     const isFavorited = favorites.some(
         (f) => f.fromCurrency === fromCurrency && f.toCurrency === toCurrency
     );
+    
     const handleFromChange = useCallback((newCode) => {
         if (newCode === fromCurrency) return;
         setFromCurrency(newCode);
